@@ -1,0 +1,9 @@
+{
+  "servers": [
+    {
+      "name": "Jesse's Rad Server",
+      "mac": "52:54:00:a5:b1:b3",
+      "ip": "192.168.122.1"
+    }
+  ]
+}

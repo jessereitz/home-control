@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+
+##################################
+#     Initialize the project     #
+##################################
+
+# Get absolute path of this
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
+
+nodemon ../hc-back/index.js & npm start --prefix ../hc-front &
