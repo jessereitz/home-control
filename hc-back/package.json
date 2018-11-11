@@ -10,7 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.4",
-    "net-ping": "^1.2.3"
+    "net-ping": "^1.2.3",
+    "wake_on_lan": "^1.0.0"
   },
   "devDependencies": {
     "eslint": "^5.9.0",

@@ -1,4 +1,5 @@
 const Ping = require('net-ping');
+const WOL = require('wake_on_lan');
 
 
 /**
@@ -23,10 +24,12 @@ const Server = {
       value: Ping.createSession(),
       enumerable: false
     });
-    this.ping((res) => {
-      this.status = res.status;
-      this.online = res.online;
-    });
+    // this.ping((res) => {
+    //   console.log('result');
+    //   console.log(res);
+    //   this.status = res.status;
+    //   this.online = res.online;
+    // });
     return this;
   },
 
@@ -42,6 +45,7 @@ const Server = {
    *      online: a boolean representing if the server is online or not.
    */
   ping(callback) {
+    console.log('pingin: ' + this.ip);
     this.session.pingHost(this.ip, (error, target) => {
       const returnObj = {};
       if (error) {
@@ -55,6 +59,32 @@ const Server = {
       }
       if (callback && typeof callback === 'function') callback(returnObj);
       else return returnObj;
+    });
+  },
+
+  /**
+   * start - Sends a magic packet to the server.
+   *
+   * @param {Function} callback The function to be called on completion.
+   *
+   * @returns {Object} Calls the callback with a status object in the form of:
+   *  {
+   *    packetSent: Boolean,
+   *    msg: String,
+   *  }
+   */
+  start(callback) {
+    WOL.wake(this.mac, (error) => {
+      let returnObj = {};
+      if (error) {
+        returnObj.packetSent = false;
+        returnObj.msg = 'Unable to send magic packet';
+      } else {
+        returnObj.packetSent = true;
+        returnObj.msg = 'Magic packet sent successfully.';
+      }
+
+      return callback(returnObj);
     });
   }
 }

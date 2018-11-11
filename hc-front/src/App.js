@@ -20,13 +20,14 @@ class App extends Component {
         });
 
       fetch('/api/servers')
-        .then(res => res.json())
-        .then((servers) => {
-          window.serv = servers;
-          this.setState({
-            servers: servers
-          });
-        });
+        .then(res => console.log(res));
+        // .then(res => res.json())
+        // .then((servers) => {
+        //   this.setState({
+        //     servers: servers
+        //   });
+        // })
+        // .catch(error => console.log(error));
   }
 
   render() {
