@@ -14,14 +14,12 @@ class App extends Component {
         .then(res => res.json())
         .then((json) => {
           this.setState({
-            user: json.user
+            user: json
           });
         });
   }
 
   render() {
-    // const user = this.state.user.username ? `, ${this.state.user.username}` : '';
-    console.log(this.state.user);
     return (
       <div className="App">
         <h1>Home Control</h1>
