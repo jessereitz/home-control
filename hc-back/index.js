@@ -22,20 +22,15 @@ const servers = serverData.servers.map(info => {
 app.get('/', (req, res) => res.send('hello!'));
 
 app.get('/api/user', (req, res) => {
-  console.log('incoming request');
   res.send( { username: 'jesse', id: '1' } );
 });
 
 app.get('/api/servers', (req, res) => {
-  console.log('servers requested');
-  // console.log(servers);
   res.send( servers );
 });
 
 app.get('/api/ping/:ip', (req, res) => {
   const { ip } = req.params;
-  // console.log('ping requested');
-  // console.log(ip);
   const server = servers.find((el) => el.ip === ip);
   server.ping((status) => {
     res.send(status);
@@ -43,11 +38,8 @@ app.get('/api/ping/:ip', (req, res) => {
 });
 
 app.get('/api/start/:mac', (req, res) => {
-  console.log('start requested');
   const { mac } = req.params;
   const server = servers.find((el) => el.mac === mac);
-  console.log(mac);
-  console.log(server);
   if (!server) {
     res.send({
       status: 'error',
@@ -73,7 +65,6 @@ app.post('/api/shutdown/:ip', (req, res) => {
       msg: 'Incorrect authentication information.',
     };
   }
-  console.log('\n\nShutdown request:');
   const server = servers.find(el => el.ip === ip);
   server.shutdown(req.body.username, req.body.password, (status) => res.send(status));
 });
@@ -86,7 +77,6 @@ app.post('/api/restart/:ip', (req, res) => {
       msg: 'Incorrect authentication information.',
     };
   }
-  console.log('\n\nRestart request.');
   const server = servers.find(el => el.ip === ip);
   server.restart((status) => res.send(status));
 });
