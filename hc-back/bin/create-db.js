@@ -21,7 +21,7 @@ db.run(`CREATE TABLE IF NOT EXISTS users(
   NAME TEXT NOT NULL,
   USERNAME TEXT NOT NULL,
   PASSWORD TEXT NOT NULL
-);`, (err) => {
+)`, (err) => {
   if (!err) console.log('Database successfully created!');
   else {
     console.log('Something went wrong. Database has NOT been created...');

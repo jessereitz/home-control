@@ -12,6 +12,7 @@ class App extends Component {
     };
     this.showAuthForm = this.showAuthForm.bind(this);
     this.hideAuthForm = this.hideAuthForm.bind(this);
+    this.logIn = this.logIn.bind(this);
   }
 
   componentDidMount() {
@@ -21,7 +22,8 @@ class App extends Component {
           this.setState({
             user: json
           });
-        });
+        })
+        .catch(err => console.error(err));
 
       fetch('/api/servers')
         // .then(res => console.log(res));
@@ -53,13 +55,28 @@ class App extends Component {
     });
   }
 
-
+  logIn() {
+    this.showAuthForm((username, password) => {
+      fetch('/api/user/login', {
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      })
+      .then(res => res.json())
+      .then(res => console.log(res))
+      .catch(err => console.error(err));
+    });
+  }
 
   render() {
     const serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} showAuthForm={this.showAuthForm} info={server} />) : <p>No server info.</p>;
     return (
       <div className="App">
         <div>
+          <button onClick={this.logIn}>Log In</button>
           <h1>Home Control</h1>
           {this.state.user ? <h2>Welcome, {this.state.user['username']}</h2> : <h2>Welcome</h2>}
           { serverInfo }

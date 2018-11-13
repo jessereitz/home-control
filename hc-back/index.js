@@ -8,6 +8,7 @@ const Ping = require('ping');
 
 // Server abstraction
 const Server = require('./src/Server.js');
+const User = require('./src/User.js');
 
 // Set port, initialize express
 const port = 8000;
@@ -18,7 +19,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Set up sessions
-app.use(session({ secret: '9LB0CTiwXxMUtu+eFRfmcw09vSg=' }));
+app.use(session({
+  cookieName: 'hc-sesh',
+  secret: '9LB0CTiwXxMUtu+eFRfmcw09vSg=',
+  duration: 30 * 60 * 1000,
+  activeDuration: 5 * 60 * 1000,
+}));
 
 // Load configuration information of servers.
 const serverData = JSON.parse(fs.readFileSync('./server-config.json', 'utf-8'));
@@ -50,7 +56,64 @@ app.get('/', (req, res) => res.send('hello!'));
  *
  */
 app.get('/api/user', (req, res) => {
-  res.send( { username: 'jesse', id: '1' } );
+  const returnObj = {};
+  if (!req.session.user) {
+    returnObj.status = 'error';
+    returnObj.msg = 'No user.';
+  } else {
+    returnObj.status = 'info';
+    returnObj.msg = 'todo';
+  }
+  res.send( returnObj );
+});
+
+/**
+ * Login - Allow the user to login.
+ *
+ */
+app.post('/api/user/login', (req, response) => {
+  let returnObj = {};
+  if (!req.body.username || !req.body.password) {
+    returnObj = {
+      status: 'error',
+      msg: 'Invalid username or password',
+    };
+  } else {
+    User.init(req.body.username, (err, res) => {
+      if (err) {
+        returnObj = {
+          status: 'error',
+          msg: err,
+        };
+        response.send(returnObj);
+
+      } else {
+        User.checkPassword(req.body.password)
+          .then((res) => {
+            if (res) {
+              returnObj = {
+                status: 'success',
+                msg: 'Successfully logged in.',
+              };
+              req.session.user = User.info.id;
+            } else {
+              returnObj = {
+                status: 'error',
+                msg: 'Invalid password',
+              };
+            }
+            response.send(returnObj);
+          })
+          .catch(err => {
+            returnObj = {
+              status: 'error',
+              msg: err,
+            };
+            response.send(returnObj);
+          });
+      }
+    });
+  }
 });
 
 /**
@@ -58,6 +121,7 @@ app.get('/api/user', (req, res) => {
  *
  */
 app.get('/api/servers', (req, res) => {
+  if (!req.session.user) return { status: 'error'};
   res.send( servers );
 });
 
