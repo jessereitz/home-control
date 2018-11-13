@@ -4,16 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "create-db": "./bin/create-db.js",
+    "create-user": "./bin/create-user.js",
+    "initialize": "npm run create-db && npm run create-user"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
+    "bcrypt": "^3.0.2",
     "body-parser": "^1.18.3",
+    "chalk": "^2.4.1",
     "express": "^4.16.4",
+    "express-session": "^1.15.6",
     "ping": "^0.2.2",
+    "prompts": "^1.2.0",
     "request": "^2.88.0",
+    "sqlite3": "^4.0.4",
     "wake_on_lan": "^1.0.0"
   },
   "devDependencies": {
