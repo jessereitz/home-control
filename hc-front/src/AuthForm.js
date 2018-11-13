@@ -32,7 +32,7 @@ export default class AuthForm extends Component {
   render() {
     return (
       <form className="authform" onSubmit={this.handleSubmit} method={this.props.method}>
-        <h2>{this.props.heading}</h2>
+        <h2>{this.props.authFormHeading}</h2>
         <p>Please enter your credentials for your server.</p>
         <label htmlFor="username">Username:</label>
         <input name="username" type="text" value={this.state.username} onChange={(e) => this.changeHandler(e, 'username')} />

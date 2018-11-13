@@ -180,7 +180,7 @@ export default class Server extends Component {
         <div className="btn-ctn">
           {
             info.online
-            ? <span><button onClick={() => this.props.showAuthForm(this.restartServer)} disabled={this.state.loading}>Restart</button><button onClick={() => this.props.showAuthForm(this.shutdownServer)} disabled={this.state.loading}>Shut Down</button></span>
+            ? <span><button onClick={() => this.props.showAuthForm('Restart Server', this.restartServer)} disabled={this.state.loading}>Restart</button><button onClick={() => this.props.showAuthForm('Shutdown Server', this.shutdownServer)} disabled={this.state.loading}>Shut Down</button></span>
             : <button disabled={this.state.loading} onClick={this.startServer}>Start</button>
           }
 

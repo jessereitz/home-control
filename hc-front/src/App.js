@@ -7,7 +7,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {},
+      user: null,
       modalDisplay: false,
     };
     this.showAuthForm = this.showAuthForm.bind(this);
@@ -15,25 +15,15 @@ class App extends Component {
     this.logIn = this.logIn.bind(this);
   }
 
-  componentDidMount() {
-      fetch('/api/user')
-        .then(res => res.json())
-        .then((json) => {
-          this.setState({
-            user: json
-          });
-        })
-        .catch(err => console.error(err));
-
-      fetch('/api/servers')
-        // .then(res => console.log(res));
-        .then(res => res.json())
-        .then((servers) => {
-          this.setState({
-            servers: servers
-          });
-        })
-        .catch(error => console.log(error));
+  getServerData() {
+    fetch('/api/servers')
+      .then(res => res.json())
+      .then((servers) => {
+        this.setState({
+          servers: servers
+        });
+      })
+      .catch(error => console.log(error));
   }
 
   /**
@@ -42,10 +32,12 @@ class App extends Component {
    * @param {Function} actionCallback The function to call on submit.
    *
    */
-  showAuthForm(actionCallback) {
+  showAuthForm(heading, actionCallback) {
+    const authFormHeading = heading ? heading : 'Authorization Required';
     this.setState({
       modalDisplay: true,
-      modalAction: actionCallback
+      modalAction: actionCallback,
+      authFormHeading,
     });
   }
 
@@ -56,7 +48,7 @@ class App extends Component {
   }
 
   logIn() {
-    this.showAuthForm((username, password) => {
+    this.showAuthForm('Log In', (username, password) => {
       fetch('/api/user/login', {
         headers: {
           'Accept': 'application/json, text/plain, */*',
@@ -66,17 +58,23 @@ class App extends Component {
         body: JSON.stringify({ username, password }),
       })
       .then(res => res.json())
-      .then(res => console.log(res))
+      .then((res) => {
+        this.setState({ user: res.user });
+        this.getServerData();
+      })
       .catch(err => console.error(err));
     });
   }
 
   render() {
-    const serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} showAuthForm={this.showAuthForm} info={server} />) : <p>No server info.</p>;
+    let serverInfo = <button onClick={this.logIn}>Log In</button>
+    if (this.state.user) {
+      console.log(this.state.user);
+      serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} showAuthForm={this.showAuthForm} info={server} />) : <p>No server info.</p>;
+    }
     return (
       <div className="App">
         <div>
-          <button onClick={this.logIn}>Log In</button>
           <h1>Home Control</h1>
           {this.state.user ? <h2>Welcome, {this.state.user['username']}</h2> : <h2>Welcome</h2>}
           { serverInfo }
@@ -85,7 +83,7 @@ class App extends Component {
         {
           this.state.modalDisplay
           ? <div className="modal">
-              <AuthForm heading="Shutdown Server" actionCallback={this.state.modalAction} close={this.hideAuthForm} method="POST" />
+              <AuthForm authFormHeading={this.state.authFormHeading} actionCallback={this.state.modalAction} close={this.hideAuthForm} method="POST" />
             </div>
           : null
         }

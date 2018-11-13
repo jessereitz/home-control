@@ -67,6 +67,10 @@ app.get('/api/user', (req, res) => {
 /**
  * Login - Allow the user to login.
  *
+ * @returns {JSON} If successeful, returns with obj.status set to "success" and
+ *  obj.user set to the user's info. Else obj.status = 'error' and obj.msg is the
+ *  error message.
+ *
  */
 app.post('/api/user/login', (req, response) => {
   let returnObj = {};
@@ -90,6 +94,11 @@ app.post('/api/user/login', (req, response) => {
               returnObj = {
                 status: 'success',
                 msg: 'Successfully logged in.',
+                user: {
+                  uid: User.info.id,
+                  name: User.info.name,
+                  username: User.info.username,
+                },
               };
               req.session.user = User.info.id;
             } else {
