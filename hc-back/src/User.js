@@ -2,8 +2,8 @@ const path = require('path');
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 
-const findUserByID = "SELECT * FROM users WHERE ID=$val;";
-const findUserByUsername = "SELECT * FROM users WHERE USERNAME=$val;";
+const findUserByID = 'SELECT * FROM users WHERE ID=$val;';
+const findUserByUsername = 'SELECT * FROM users WHERE USERNAME=$val;';
 
 /**
  * findUser - Finds a user in the database either by ID or by username.
@@ -27,7 +27,7 @@ function findUser(nameOrId, db) {
       const stmt = db.prepare(queryString);
       stmt.get([$val], (err, row) => {
         if (err || !row) {
-          reject('Unable to find user.');
+          reject(Error('Unable to find user.'));
         } else {
           resolve(row);
         }
@@ -54,17 +54,17 @@ const User = {
     this.info = {};
     this.db = new sqlite3.Database(
       path.join(__dirname, '..', 'hc-info.db'),
-      sqlite3.OPEN_READONLY
+      sqlite3.OPEN_READONLY,
     );
     findUser(usernameOrId, this.db)
-      .then(userInfo => {
+      .then((userInfo) => {
         this.info.id = userInfo.ID;
         this.info.name = userInfo.NAME;
         this.info.username = userInfo.USERNAME;
         this.info.password = userInfo.PASSWORD;
         callback(null, this.info);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         callback('No user found.', null);
       });
@@ -82,12 +82,12 @@ const User = {
       bcrypt.compare(String(plainText), this.info.password, (err, res) => {
         if (err) {
           console.error(err);
-          return reject('An error occured checking password');
+          return reject(Error('An error occured checking password'));
         }
         return resolve(res);
       });
     });
-  }
-}
+  },
+};
 
 module.exports = User;

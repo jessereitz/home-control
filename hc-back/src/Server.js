@@ -1,4 +1,3 @@
-const { exec } = require('child_process');
 const Ping = require('ping');
 const WOL = require('wake_on_lan');
 const axios = require('axios');
@@ -51,8 +50,8 @@ const Server = {
       }
       this.status = returnObj.status;
       this.online = returnObj.online;
-      if (callback && typeof callback === 'function') callback(returnObj);
-      else return returnObj;
+      if (callback && typeof callback === 'function') return callback(returnObj);
+      return returnObj;
     });
   },
 
@@ -69,7 +68,7 @@ const Server = {
    */
   start(callback) {
     WOL.wake(this.mac, (error) => {
-      let returnObj = {};
+      const returnObj = {};
       if (error) {
         returnObj.packetSent = false;
         returnObj.msg = 'Unable to send magic packet';
@@ -84,35 +83,31 @@ const Server = {
 
   shutdown(username, password, callback) {
     axios.post(`http://${this.ip}:9980/shutdown`, {
-      key: 1234
+      key: 1234,
     })
-    .then(res => {
-      return callback(res.data);
-    })
-    .catch(err => {
-      console.log(err);
-      return callback({
-        status: 'error',
-        msg: 'Unable to shutdown server.',
+      .then(res => callback(res.data))
+      .catch((err) => {
+        console.log(err);
+        return callback({
+          status: 'error',
+          msg: 'Unable to shutdown server.',
+        });
       });
-    });
   },
 
   restart(callback) {
     axios.post(`http://${this.ip}:9980/restart`, {
-      key: 1234
+      key: 1234,
     })
-    .then(res => {
-      return callback(res.data);
-    })
-    .catch(err => {
-      console.log(err);
-      return callback({
-        status: 'error',
-        msg: 'Unable to restart server.',
+      .then(res => callback(res.data))
+      .catch((err) => {
+        console.log(err);
+        return callback({
+          status: 'error',
+          msg: 'Unable to restart server.',
+        });
       });
-    });
-  }
-}
+  },
+};
 
 module.exports = Server;

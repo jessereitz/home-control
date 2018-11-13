@@ -150,7 +150,6 @@ export default class Server extends Component {
     const messages = this.state.notifications.map((msg) => {
       return <Notification message={msg} />
     });
-    let statusClass = '';
     return (
       <div className="hover-card">
         <h2>{this.name}</h2>

@@ -2,9 +2,6 @@ const fs = require('fs');
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
-const sqlite3 = require('sqlite3');
-const Ping = require('ping');
 
 // Server abstraction
 const Server = require('./src/Server.js');
@@ -29,7 +26,7 @@ app.use(session({
 // Load configuration information of servers.
 const serverData = JSON.parse(fs.readFileSync('./server-config.json', 'utf-8'));
 // Initialize server objects
-const servers = serverData.servers.map(info => {
+const servers = serverData.servers.map((info) => {
   const returnServer = Object.create(Server);
   returnServer.init(info);
   return returnServer;
@@ -43,11 +40,11 @@ const servers = serverData.servers.map(info => {
 app.get('/', (req, res) => res.send('hello!'));
 
 
-/*************************
+/** **********************
  *                       *
  *          API          *
  *                       *
- ************************/
+ ********************** */
 
 /* API - Endpoints for interacting with the servers. */
 
@@ -64,7 +61,7 @@ app.get('/api/user', (req, res) => {
     returnObj.status = 'info';
     returnObj.msg = 'todo';
   }
-  res.send( returnObj );
+  res.send(returnObj);
 });
 
 /**
@@ -79,14 +76,13 @@ app.post('/api/user/login', (req, response) => {
       msg: 'Invalid username or password',
     };
   } else {
-    User.init(req.body.username, (err, res) => {
+    User.init(req.body.username, (err) => {
       if (err) {
         returnObj = {
           status: 'error',
           msg: err,
         };
         response.send(returnObj);
-
       } else {
         User.checkPassword(req.body.password)
           .then((res) => {
@@ -104,10 +100,10 @@ app.post('/api/user/login', (req, response) => {
             }
             response.send(returnObj);
           })
-          .catch(err => {
+          .catch((error) => {
             returnObj = {
               status: 'error',
-              msg: err,
+              msg: error.message,
             };
             response.send(returnObj);
           });
@@ -121,8 +117,8 @@ app.post('/api/user/login', (req, response) => {
  *
  */
 app.get('/api/servers', (req, res) => {
-  if (!req.session.user) return { status: 'error'};
-  res.send( servers );
+  if (!req.session.user) return { status: 'error' };
+  return res.send(servers);
 });
 
 /**
@@ -133,7 +129,7 @@ app.get('/api/servers', (req, res) => {
  */
 app.get('/api/ping/:ip', (req, res) => {
   const { ip } = req.params;
-  const server = servers.find((el) => el.ip === ip);
+  const server = servers.find(el => el.ip === ip);
   server.ping((status) => {
     res.send(status);
   });
@@ -144,7 +140,7 @@ app.get('/api/ping/:ip', (req, res) => {
  */
 app.get('/api/start/:mac', (req, res) => {
   const { mac } = req.params;
-  const server = servers.find((el) => el.mac === mac);
+  const server = servers.find(el => el.mac === mac);
   if (!server) {
     res.send({
       status: 'error',
@@ -173,7 +169,7 @@ app.post('/api/shutdown/:ip', (req, res) => {
     };
   }
   const server = servers.find(el => el.ip === ip);
-  server.shutdown(req.body.username, req.body.password, (status) => res.send(status));
+  return server.shutdown(req.body.username, req.body.password, status => res.send(status));
 });
 
 /**
@@ -191,7 +187,7 @@ app.post('/api/restart/:ip', (req, res) => {
     };
   }
   const server = servers.find(el => el.ip === ip);
-  server.restart((status) => res.send(status));
+  return server.restart(status => res.send(status));
 });
 
 
