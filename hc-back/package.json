@@ -9,8 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
-    "net-ping": "^1.2.3",
+    "ping": "^0.2.2",
+    "request": "^2.88.0",
     "wake_on_lan": "^1.0.0"
   },
   "devDependencies": {

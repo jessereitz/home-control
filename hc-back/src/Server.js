@@ -1,5 +1,7 @@
-const Ping = require('net-ping');
+const { exec } = require('child_process');
+const Ping = require('ping');
 const WOL = require('wake_on_lan');
+const axios = require('axios');
 
 
 /**
@@ -19,17 +21,8 @@ const Server = {
    */
   init(info) {
     Object.assign(this, info);
-    // Session is non-enumerable so it's not provided in http responses.
-    Object.defineProperty(this, 'session', {
-      value: Ping.createSession(),
-      enumerable: false
-    });
-    // this.ping((res) => {
-    //   console.log('result');
-    //   console.log(res);
-    //   this.status = res.status;
-    //   this.online = res.online;
-    // });
+    this.status = 'Offline';
+    this.online = false;
     return this;
   },
 
@@ -45,18 +38,19 @@ const Server = {
    *      online: a boolean representing if the server is online or not.
    */
   ping(callback) {
-    console.log('pingin: ' + this.ip);
-    this.session.pingHost(this.ip, (error, target) => {
+    Ping.sys.probe(this.ip, (isAlive) => {
       const returnObj = {};
-      if (error) {
+      if (!isAlive) {
         returnObj.status = 'Offline';
-        returnObj.msg = error.toString();
+        returnObj.msg = 'Server is currently unavailable.';
         returnObj.online = false;
       } else {
         returnObj.status = 'Online';
         returnObj.msg = 'Server is online and responding to pings.';
         returnObj.online = true;
       }
+      this.status = returnObj.status;
+      this.online = returnObj.online;
       if (callback && typeof callback === 'function') callback(returnObj);
       else return returnObj;
     });
@@ -85,6 +79,38 @@ const Server = {
       }
 
       return callback(returnObj);
+    });
+  },
+
+  shutdown(username, password, callback) {
+    axios.post(`http://${this.ip}:9980/shutdown`, {
+      key: 1234
+    })
+    .then(res => {
+      return callback(res.data);
+    })
+    .catch(err => {
+      console.log(err);
+      return callback({
+        status: 'error',
+        msg: 'Unable to shutdown server.',
+      });
+    });
+  },
+
+  restart(callback) {
+    axios.post(`http://${this.ip}:9980/restart`, {
+      key: 1234
+    })
+    .then(res => {
+      return callback(res.data);
+    })
+    .catch(err => {
+      console.log(err);
+      return callback({
+        status: 'error',
+        msg: 'Unable to restart server.',
+      });
     });
   }
 }

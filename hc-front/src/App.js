@@ -1,13 +1,17 @@
 import React, { Component } from 'react';
 import Server from './Server.js';
+import AuthForm from './AuthForm.js';
 import './App.css';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {}
+      user: {},
+      modalDisplay: false,
     };
+    this.showAuthForm = this.showAuthForm.bind(this);
+    this.hideAuthForm = this.hideAuthForm.bind(this);
   }
 
   componentDidMount() {
@@ -20,25 +24,55 @@ class App extends Component {
         });
 
       fetch('/api/servers')
-        .then(res => console.log(res));
-        // .then(res => res.json())
-        // .then((servers) => {
-        //   this.setState({
-        //     servers: servers
-        //   });
-        // })
-        // .catch(error => console.log(error));
+        // .then(res => console.log(res));
+        .then(res => res.json())
+        .then((servers) => {
+          this.setState({
+            servers: servers
+          });
+        })
+        .catch(error => console.log(error));
   }
 
+  /**
+   * showAuthForm - Show the authorization form.
+   *
+   * @param {Function} actionCallback The function to call on submit.
+   *
+   */
+  showAuthForm(actionCallback) {
+    this.setState({
+      modalDisplay: true,
+      modalAction: actionCallback
+    });
+  }
+
+  hideAuthForm() {
+    this.setState({
+      modalDisplay: false,
+    });
+  }
+
+
+
   render() {
-    const serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} info={server} />) : <p>No server info.</p>;
+    const serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} showAuthForm={this.showAuthForm} info={server} />) : <p>No server info.</p>;
     return (
       <div className="App">
-        <h1>Home Control</h1>
-        {this.state.user ? <h2>Welcome, {this.state.user['username']}</h2> : <h2>Welcome</h2>}
+        <div>
+          <h1>Home Control</h1>
+          {this.state.user ? <h2>Welcome, {this.state.user['username']}</h2> : <h2>Welcome</h2>}
+          { serverInfo }
+        </div>
+
         {
-          serverInfo
+          this.state.modalDisplay
+          ? <div className="modal">
+              <AuthForm heading="Shutdown Server" actionCallback={this.state.modalAction} close={this.hideAuthForm} method="POST" />
+            </div>
+          : null
         }
+
       </div>
     );
   }
