@@ -33,16 +33,15 @@ export default class AuthForm extends Component {
   }
 
   handleSubmit(e) {
-    console.log('submit');
     e.preventDefault();
     const { username, password } = this.state;
-    this.props.actionCallback(username, password, this);
     this.setState({
       username: '',
       password: '',
       loading: true,
       notifications: [],
     });
+    this.props.actionCallback(username, password, this);
   }
 
   addNotification(notification) {

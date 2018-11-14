@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
+
+import { makeCancelable, appendPendingPromise, removePendingPromise } from './lib.js';
+
 import AuthForm from './AuthForm.js';
 import ServerCtn from './ServerCtn.js';
+
 import './App.css';
 
 function LogBtn(props) {
@@ -21,6 +25,10 @@ class App extends Component {
     this.hideAuthForm = this.hideAuthForm.bind(this);
     this.logIn = this.logIn.bind(this);
     this.logOut = this.logOut.bind(this);
+
+    this.pendingPromises = [];
+    this.appendPendingPromise = appendPendingPromise.bind(this);
+    this.removePendingPromise = removePendingPromise.bind(this);
   }
 
   componentDidMount() {
@@ -28,30 +36,45 @@ class App extends Component {
     this.getServerData();
   }
 
+  // componentWillUnmoutn}
+
   getUserData() {
-    fetch('/api/user')
+    const pendingUser = makeCancelable(fetch('/api/user'));
+
+    this.appendPendingPromise(pendingUser);
+
+    pendingUser.promise
       .then(res => res.json())
       .then((res) => {
         if (res.status !== 'error') {
+          this.removePendingPromise(pendingUser);
           this.setState({
             user: res,
           });
         }
       })
-      .catch(err => console.log(err));
+      .catch(() => this.removePendingPromise(pendingUser));
   }
 
   getServerData() {
-    fetch('/api/servers')
+    const pendingServer = makeCancelable(fetch('/api/servers'));
+
+    this.appendPendingPromise(pendingServer);
+
+    pendingServer.promise
       .then(res => res.json())
       .then((res) => {
+        this.removePendingPromise(pendingServer);
         if (res.status !== 'error') {
           this.setState({
             servers: res,
           });
         }
       })
-      .catch(error => this.setState({ servers: [] }));
+      .catch((error) => {
+        this.removePendingPromise(pendingServer);
+        this.setState({ servers: [] });
+      });
   }
 
   /**
@@ -77,14 +100,20 @@ class App extends Component {
 
   logIn() {
     this.showAuthForm('Log In', (username, password, form) => {
-      fetch('/api/user/login', {
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Content-Type': 'application/json'
-        },
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      })
+      const pendingLogin = makeCancelable(
+        fetch('/api/user/login', {
+          headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json'
+          },
+          method: 'POST',
+          body: JSON.stringify({ username, password }),
+        })
+      );
+
+      this.appendPendingPromise(pendingLogin);
+
+      pendingLogin.promise
       .then(res => res.json())
       .then((res) => {
         if (res.status === 'error') {
@@ -102,11 +131,13 @@ class App extends Component {
   }
 
   logOut() {
-    console.log('logging out');
-    fetch('/api/user/logout')
+    const pendingLogout = makeCancelable(fetch('/api/user/logout'));
+
+    this.appendPendingPromise(pendingLogout);
+
+    pendingLogout.promise
     .then(res => res.json())
     .then((res) => {
-      console.log(res);
       if (res.status === 'success') {
         this.setState({ user: null });
       } else {
@@ -118,10 +149,6 @@ class App extends Component {
   }
 
   render() {
-    // let serverInfo = <button onClick={this.logIn}>Log In</button>
-    // if (this.state.user) {
-    //   serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} showAuthForm={this.showAuthForm} info={server} />) : <p>No server info.</p>;
-    // }
     return (
       <div className="App">
         <div>

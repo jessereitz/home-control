@@ -38,8 +38,6 @@ const Server = {
    */
   ping(callback) {
     Ping.sys.probe(this.ip, (isAlive) => {
-      console.log('is alive: ', isAlive);
-      console.log(this.ip);
       const returnObj = {};
       if (!isAlive) {
         returnObj.status = 'Offline';

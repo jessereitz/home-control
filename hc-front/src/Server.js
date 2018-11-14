@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import { ClipLoader } from 'react-spinners';
+import Notification from './Notification';
+
+import { makeCancelable } from './lib.js';
+
 import './App.css';
 
-import Notification from './Notification';
 
 const spinnerCSS = `
   margin: 0;
@@ -36,6 +39,8 @@ export default class Server extends Component {
     this.addNotification = this.addNotification.bind(this);
     this.shutdownServer = this.shutdownServer.bind(this);
     this.restartServer = this.restartServer.bind(this);
+
+    this.pendingPromises = [];
   }
 
   /**
@@ -58,6 +63,23 @@ export default class Server extends Component {
     });
   }
 
+  appendPendingPromise(promise) {
+    this.pendingPromises = [...this.pendingPromises, promise];
+  }
+
+  removePendingPromise(promise) {
+    this.pendingPromises = this.pendingPromises.filter(p => p !== promise);
+  }
+
+
+  componentDidMount() {
+    this.ping();
+  }
+
+  componentWillUnmount() {
+    this.pendingPromises.map(promise => promise.cancel());
+  }
+
   /**
    * ping - Sends a ping to the server and updates state accordingly.
    *
@@ -67,19 +89,24 @@ export default class Server extends Component {
   ping(times) {
     if (times === undefined) times = 3;
     this.setState({ loading: true });
-    fetch(this.pingURL)
+    const pendingPing = makeCancelable(fetch(this.pingURL));
+
+    this.appendPendingPromise(pendingPing);
+
+    pendingPing.promise
     .then(res => res.json())
     .then((res) => {
-      console.log(res);
       if (!res.online && times > 0) return this.ping(times - 1);
       this.addNotification({
         status: res.online ? 'success' : 'error',
         text: res.msg,
       });
-
+      this.removePendingPromise(pendingPing);
       this.setState({ loading: false, status: res.status, online: res.online });
     })
-    .catch(error => console.log(error));
+    .catch((error) => {
+      this.removePendingPromise(pendingPing);
+    });
   }
 
   /**
@@ -89,16 +116,22 @@ export default class Server extends Component {
    */
   startServer() {
     this.setState({ loading: true });
-    fetch(this.startURL)
+    const pendingStart = makeCancelable(fetch(this.startURL));
+    this.appendPendingPromise(pendingStart);
+
+    pendingStart.promise
       .then(res => res.json())
       .then((res) => {
+        this.removePendingPromise(pendingStart);
         this.addNotification({
           status: res.packetSent ? 'info' : 'error',
           text: res.msg,
         });
         this.ping(25);
       })
-      .catch(error => console.log(error));
+      .catch((error) => {
+        this.removePendingPromise(pendingStart);
+      });
   }
 
   /**
@@ -106,16 +139,23 @@ export default class Server extends Component {
    *
    */
   shutdownServer(username, password, form) {
-    fetch(this.shutdownURL, {
-      headers: {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
-      },
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    })
+    const pendingShutdown = makeCancelable(
+      fetch(this.shutdownURL, {
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      })
+    );
+
+    this.appendPendingPromise(pendingShutdown);
+
+    pendingShutdown.promise
     .then(res => res.json())
     .then(res => {
+      this.removePendingPromise(pendingShutdown);
       this.addNotification({
         status: res.status,
         text: res.msg,
@@ -123,6 +163,7 @@ export default class Server extends Component {
       form.close();
     })
     .catch((err) => {
+      this.removePendingPromise(pendingShutdown);
       form.addNotification({
         status: 'error',
         msg: 'Unable to shutdown server',
@@ -139,16 +180,23 @@ export default class Server extends Component {
    * @returns {type} Description
    */
   restartServer(username, password, form) {
-    fetch(this.restartURL, {
-      headers: {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
-      },
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    })
+    const pendingRestart = makeCancelable(
+      fetch(this.restartURL, {
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      })
+    );
+
+    this.appendPendingPromise(pendingRestart);
+
+    pendingRestart.promise
     .then(res => res.json())
     .then(res => {
+      this.removePendingPromise(pendingRestart);
       this.addNotification({
         status: res.status,
         text: res.msg,
@@ -156,6 +204,7 @@ export default class Server extends Component {
       form.close();
     })
     .catch((err) => {
+      this.removePendingPromise(pendingRestart);
       form.addNotification({
         status: 'error',
         msg: 'Unable to restart server.',
@@ -163,9 +212,6 @@ export default class Server extends Component {
     });
   }
 
-  componentDidMount() {
-    this.ping();
-  }
 
   render() {
     const info = this.state;
