@@ -1,6 +1,6 @@
 const fs = require('fs');
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 
 // Server abstraction
@@ -16,12 +16,35 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Set up sessions
-app.use(session({
-  cookieName: 'hc-sesh',
-  secret: '9LB0CTiwXxMUtu+eFRfmcw09vSg=',
-  duration: 30 * 60 * 1000,
-  activeDuration: 5 * 60 * 1000,
+// app.use(session({
+//   store: new RedisStore({
+//     host: 'localhost', port: 6379, client: redisClient, ttl: 260,
+//   }),
+//   cookieName: 'hc-sesh',
+//   secret: '9LB0CTiwXxMUtu+eFRfmcw09vSg=',
+//   maxAge: 8 * 60 * 60 * 1000,
+//   // duration: 30 * 60 * 1000,
+//   // activeDuration: 5 * 60 * 1000,
+// }));
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ['9LB0CTiwXxMUtu+eFRfmcw09vSg='],
+
+  maxAge: 8 * 60 * 60 * 1000,
 }));
+
+app.use((req, res, next) => {
+  if (req.session && req.session.user) return next();
+  const apiHit = req.path.match(/api/);
+  if (apiHit && req.path !== '/api/user/login') {
+    res.send({
+      status: 'error',
+      msg: 'Please authenticate before continuing',
+    });
+  } else next();
+  return null;
+});
 
 // Load configuration information of servers.
 const serverData = JSON.parse(fs.readFileSync('./server-config.json', 'utf-8'));
@@ -39,7 +62,6 @@ const servers = serverData.servers.map((info) => {
  */
 app.get('/', (req, res) => res.send('hello!'));
 
-
 /** **********************
  *                       *
  *          API          *
@@ -54,14 +76,25 @@ app.get('/', (req, res) => res.send('hello!'));
  */
 app.get('/api/user', (req, res) => {
   const returnObj = {};
+  console.log('user');
+  console.log(req.session.user);
   if (!req.session.user) {
     returnObj.status = 'error';
     returnObj.msg = 'No user.';
+    res.send(returnObj);
   } else {
-    returnObj.status = 'info';
-    returnObj.msg = 'todo';
+    User.init(req.session.user, (err, user) => {
+      if (err) {
+        returnObj.status = 'error';
+        returnObj.msg = err.message;
+      } else {
+        returnObj.name = user.name;
+        returnObj.username = user.username;
+        returnObj.uid = user.id;
+      }
+      res.send(returnObj);
+    });
   }
-  res.send(returnObj);
 });
 
 /**
@@ -79,45 +112,59 @@ app.post('/api/user/login', (req, response) => {
       status: 'error',
       msg: 'Invalid username or password',
     };
-  } else {
-    User.init(req.body.username, (err) => {
-      if (err) {
+    return response.send(returnObj);
+  }
+  User.init(req.body.username, (err) => {
+    if (err) {
+      returnObj = {
+        status: 'error',
+        msg: err,
+      };
+      return response.send(returnObj);
+    }
+    User.checkPassword(req.body.password)
+      .then((res) => {
+        if (res) {
+          returnObj = {
+            status: 'success',
+            msg: 'Successfully logged in.',
+            user: {
+              uid: User.info.id,
+              name: User.info.name,
+              username: User.info.username,
+            },
+          };
+          req.session.user = User.info.id;
+        } else {
+          returnObj = {
+            status: 'error',
+            msg: 'Invalid password',
+          };
+        }
+        return response.send(returnObj);
+      })
+      .catch((error) => {
         returnObj = {
           status: 'error',
-          msg: err,
+          msg: error.message,
         };
-        response.send(returnObj);
-      } else {
-        User.checkPassword(req.body.password)
-          .then((res) => {
-            if (res) {
-              returnObj = {
-                status: 'success',
-                msg: 'Successfully logged in.',
-                user: {
-                  uid: User.info.id,
-                  name: User.info.name,
-                  username: User.info.username,
-                },
-              };
-              req.session.user = User.info.id;
-            } else {
-              returnObj = {
-                status: 'error',
-                msg: 'Invalid password',
-              };
-            }
-            response.send(returnObj);
-          })
-          .catch((error) => {
-            returnObj = {
-              status: 'error',
-              msg: error.message,
-            };
-            response.send(returnObj);
-          });
-      }
-    });
+        return response.send(returnObj);
+      });
+    return null;
+  });
+  return null;
+});
+
+app.get('/api/user/logout', (req, res) => {
+  if (!req.session || !req.session.user) res.send({ status: 'error', msg: 'No user.' });
+  else {
+    req.session = null;
+    res.redirect('/');
+    // req.session.destroy((err) => {
+    //   console.log(err);
+    //   // const returnObj = err ? { status: 'error', msg: 'Unsuccessful logout.' } : { status: 'success', msg: 'Logged out successfully.' };
+    //   // res.redirect('/out');
+    // });
   }
 });
 

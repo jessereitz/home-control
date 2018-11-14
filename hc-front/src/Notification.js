@@ -30,6 +30,7 @@ export default class Notification extends Component {
 
   hide() {
     this.setState({ hide: true });
+    if (this.props.remove) this.props.remove(this.props.keyVal);
   }
 
   render() {
@@ -37,7 +38,11 @@ export default class Notification extends Component {
     if (!message || this.state.hide) return null;
     return (
       <div key={this.getKey()} className={message.status}>
-        {message.text}
+        {
+          message.text
+          ? message.text
+          : message.msg
+        }
         <button onClick={this.hide}>X</button>
       </div>
     );

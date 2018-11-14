@@ -11,9 +11,6 @@ const spinnerCSS = `
 export default class Server extends Component {
   constructor(props) {
     super(props);
-    console.log(props);
-
-
     this.state = {
       status: 'Offline',
       online: false,
@@ -94,7 +91,7 @@ export default class Server extends Component {
    * shutdownServer - Shuts down the server.
    *
    */
-  shutdownServer(username, password) {
+  shutdownServer(username, password, form) {
     fetch(this.shutdownURL, {
       headers: {
         'Accept': 'application/json, text/plain, */*',
@@ -105,10 +102,16 @@ export default class Server extends Component {
     })
     .then(res => res.json())
     .then(res => {
-      console.log(res);
       this.addNotification({
         status: res.status,
         text: res.msg,
+      });
+      form.close();
+    })
+    .catch((err) => {
+      form.addNotification({
+        status: 'error',
+        msg: 'Unable to shutdown server',
       });
     });
   }
@@ -121,7 +124,7 @@ export default class Server extends Component {
    *
    * @returns {type} Description
    */
-  restartServer(username, password) {
+  restartServer(username, password, form) {
     fetch(this.restartURL, {
       headers: {
         'Accept': 'application/json, text/plain, */*',
@@ -132,10 +135,16 @@ export default class Server extends Component {
     })
     .then(res => res.json())
     .then(res => {
-      console.log(res);
       this.addNotification({
         status: res.status,
         text: res.msg,
+      });
+      form.close();
+    })
+    .catch((err) => {
+      form.addNotification({
+        status: 'error',
+        msg: 'Unable to restart server.',
       });
     });
   }

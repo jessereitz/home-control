@@ -19,10 +19,10 @@ function findUser(nameOrId, db) {
     db.serialize(() => {
       let queryString;
       const $val = nameOrId;
-      if (Number.isNaN(nameOrId)) {
-        queryString = findUserByID;
-      } else {
+      if (isNaN(nameOrId)) {
         queryString = findUserByUsername;
+      } else {
+        queryString = findUserByID;
       }
       const stmt = db.prepare(queryString);
       stmt.get([$val], (err, row) => {

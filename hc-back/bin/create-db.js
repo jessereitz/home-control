@@ -1,8 +1,8 @@
 #! /usr/bin/env node
 
-/***************************
+/** ************************
  *     Create Database     *
- **************************/
+ ************************ */
 
 /**
 * This script creates the user database for Home Control.

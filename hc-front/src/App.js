@@ -9,21 +9,43 @@ class App extends Component {
     this.state = {
       user: null,
       modalDisplay: false,
+      servers: [],
     };
     this.showAuthForm = this.showAuthForm.bind(this);
     this.hideAuthForm = this.hideAuthForm.bind(this);
     this.logIn = this.logIn.bind(this);
+    this.logOut = this.logOut.bind(this);
+  }
+
+  componentDidMount() {
+    this.getUserData();
+    this.getServerData();
+  }
+
+  getUserData() {
+    fetch('/api/user')
+      .then(res => res.json())
+      .then((res) => {
+        if (res.status !== 'error') {
+          this.setState({
+            user: res,
+          });
+        }
+      })
+      .catch(err => console.log(err));
   }
 
   getServerData() {
     fetch('/api/servers')
       .then(res => res.json())
-      .then((servers) => {
-        this.setState({
-          servers: servers
-        });
+      .then((res) => {
+        if (res.status !== 'error') {
+          this.setState({
+            servers: res,
+          });
+        }
       })
-      .catch(error => console.log(error));
+      .catch(error => this.setState({ servers: [] }));
   }
 
   /**
@@ -48,7 +70,7 @@ class App extends Component {
   }
 
   logIn() {
-    this.showAuthForm('Log In', (username, password) => {
+    this.showAuthForm('Log In', (username, password, form) => {
       fetch('/api/user/login', {
         headers: {
           'Accept': 'application/json, text/plain, */*',
@@ -59,26 +81,48 @@ class App extends Component {
       })
       .then(res => res.json())
       .then((res) => {
+        if (res.status === 'error') {
+          console.log('error');
+          return form.addNotification(res);
+        }
         this.setState({ user: res.user });
         this.getServerData();
+        form.close();
       })
-      .catch(err => console.error(err));
+      .catch((err) => {
+        form.addNotification(err);
+      });
     });
+  }
+
+  logOut() {
+    fetch('/api/user/logout')
+    .then(res => res.json())
+    .then((res) => {
+      if (res.status === 'success') {
+        this.setState({ user: null });
+      } else {
+        console.log(res);
+        alert('Unable to log out.');
+      }
+    })
+    .catch(err => console.log(err));
   }
 
   render() {
     let serverInfo = <button onClick={this.logIn}>Log In</button>
     if (this.state.user) {
-      console.log(this.state.user);
+      console.log(this.state.servers);
       serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} showAuthForm={this.showAuthForm} info={server} />) : <p>No server info.</p>;
     }
     return (
       <div className="App">
         <div>
           <h1>Home Control</h1>
-          {this.state.user ? <h2>Welcome, {this.state.user['username']}</h2> : <h2>Welcome</h2>}
+          {this.state.user ? <h2>Welcome, {this.state.user['name']}</h2> : <h2>Welcome</h2>}
           { serverInfo }
         </div>
+        <a href="https://google.com">test</a>
 
         {
           this.state.modalDisplay
@@ -88,6 +132,9 @@ class App extends Component {
           : null
         }
 
+        {
+          this.state.user ? <a href="/api/users/logout">Log Out</a> : null
+        }
       </div>
     );
   }
