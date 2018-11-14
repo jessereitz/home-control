@@ -7,6 +7,11 @@ import Notification from './Notification';
 const spinnerCSS = `
   margin: 0;
 `
+let curKey = 0;
+
+function getKey() {
+  return curKey++;
+}
 
 export default class Server extends Component {
   constructor(props) {
@@ -41,8 +46,16 @@ export default class Server extends Component {
    *
    */
   addNotification(notification) {
+    notification.key = getKey();
     const newNotifications = this.state.notifications.concat(notification);
     this.setState({ notifications: newNotifications });
+  }
+
+  removeNotification(notificationKey) {
+    const newNotifications = this.state.notifications.filter(el => el.keyVal === notificationKey);
+    this.setState({
+      notifications: newNotifications,
+    });
   }
 
   /**
@@ -57,6 +70,7 @@ export default class Server extends Component {
     fetch(this.pingURL)
     .then(res => res.json())
     .then((res) => {
+      console.log(res);
       if (!res.online && times > 0) return this.ping(times - 1);
       this.addNotification({
         status: res.online ? 'success' : 'error',
@@ -157,7 +171,7 @@ export default class Server extends Component {
     const info = this.state;
     if (!info) return null;
     const messages = this.state.notifications.map((msg) => {
-      return <Notification message={msg} />
+      return <Notification key={msg.key} message={msg} />
     });
     return (
       <div className="hover-card">
@@ -165,7 +179,6 @@ export default class Server extends Component {
         <div className="notification">
           {messages}
         </div>
-        <Notification messages={this.state.messages} />
         <table>
           <tbody>
             <tr>

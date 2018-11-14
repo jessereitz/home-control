@@ -15,18 +15,6 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Set up sessions
-// app.use(session({
-//   store: new RedisStore({
-//     host: 'localhost', port: 6379, client: redisClient, ttl: 260,
-//   }),
-//   cookieName: 'hc-sesh',
-//   secret: '9LB0CTiwXxMUtu+eFRfmcw09vSg=',
-//   maxAge: 8 * 60 * 60 * 1000,
-//   // duration: 30 * 60 * 1000,
-//   // activeDuration: 5 * 60 * 1000,
-// }));
-
 app.use(cookieSession({
   name: 'session',
   keys: ['9LB0CTiwXxMUtu+eFRfmcw09vSg='],
@@ -159,12 +147,7 @@ app.get('/api/user/logout', (req, res) => {
   if (!req.session || !req.session.user) res.send({ status: 'error', msg: 'No user.' });
   else {
     req.session = null;
-    res.redirect('/');
-    // req.session.destroy((err) => {
-    //   console.log(err);
-    //   // const returnObj = err ? { status: 'error', msg: 'Unsuccessful logout.' } : { status: 'success', msg: 'Logged out successfully.' };
-    //   // res.redirect('/out');
-    // });
+    res.send({ status: 'success', msg: 'Logged out successfully.' });
   }
 });
 

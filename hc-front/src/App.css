@@ -139,3 +139,15 @@ td {
     min-width: 90%;
   }
 }
+
+.logbtn {
+  position: absolute;
+  right: 1rem;
+  top: 1em;
+  color: #fff;
+  border-color: rgba(0,0,0,0);
+}
+
+.logbtn:active {
+  position: absolute;
+}

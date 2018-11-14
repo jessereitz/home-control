@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
-import Server from './Server.js';
 import AuthForm from './AuthForm.js';
+import ServerCtn from './ServerCtn.js';
 import './App.css';
+
+function LogBtn(props) {
+  return (
+    <button className={'logbtn'} onClick={props.onClick}>{props.text}</button>
+  )
+}
 
 class App extends Component {
   constructor(props) {
@@ -96,9 +102,11 @@ class App extends Component {
   }
 
   logOut() {
+    console.log('logging out');
     fetch('/api/user/logout')
     .then(res => res.json())
     .then((res) => {
+      console.log(res);
       if (res.status === 'success') {
         this.setState({ user: null });
       } else {
@@ -110,19 +118,21 @@ class App extends Component {
   }
 
   render() {
-    let serverInfo = <button onClick={this.logIn}>Log In</button>
-    if (this.state.user) {
-      console.log(this.state.servers);
-      serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} showAuthForm={this.showAuthForm} info={server} />) : <p>No server info.</p>;
-    }
+    // let serverInfo = <button onClick={this.logIn}>Log In</button>
+    // if (this.state.user) {
+    //   serverInfo = this.state.servers ? this.state.servers.map(server => <Server key={server.mac} showAuthForm={this.showAuthForm} info={server} />) : <p>No server info.</p>;
+    // }
     return (
       <div className="App">
         <div>
           <h1>Home Control</h1>
           {this.state.user ? <h2>Welcome, {this.state.user['name']}</h2> : <h2>Welcome</h2>}
-          { serverInfo }
+          {
+            this.state.user
+            ? <ServerCtn servers={this.state.servers} showAuthForm={this.showAuthForm} />
+            : <p>You must log in first.</p>
+          }
         </div>
-        <a href="https://google.com">test</a>
 
         {
           this.state.modalDisplay
@@ -133,7 +143,7 @@ class App extends Component {
         }
 
         {
-          this.state.user ? <a href="/api/users/logout">Log Out</a> : null
+          this.state.user ? <LogBtn onClick={this.logOut} text={'Log Out'}/> : <LogBtn onClick={this.logIn} text={'Log In'}/>
         }
       </div>
     );
