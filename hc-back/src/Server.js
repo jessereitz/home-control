@@ -83,7 +83,7 @@ const Server = {
 
   shutdown(username, password, callback) {
     axios.post(`http://${this.ip}:9980/shutdown`, {
-      key: 1234,
+      username, password,
     })
       .then(res => callback(res.data))
       .catch((err) => {
@@ -95,9 +95,9 @@ const Server = {
       });
   },
 
-  restart(callback) {
+  restart(username, password, callback) {
     axios.post(`http://${this.ip}:9980/restart`, {
-      key: 1234,
+      username, password,
     })
       .then(res => callback(res.data))
       .catch((err) => {

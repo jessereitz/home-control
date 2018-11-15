@@ -193,6 +193,13 @@ app.get('/api/start/:mac', (req, res) => {
   });
 });
 
+
+/** **************************************
+ *                                       *
+ *     Authenticated Server Commands     *
+ *                                       *
+ ************************************** */
+
 /**
  * Shutdown - Sends a shutdown request to the server.
  *
@@ -204,7 +211,7 @@ app.post('/api/shutdown/:ip', (req, res) => {
   if (!ip || !req.body.username || !req.body.password) {
     return {
       status: 'error',
-      msg: 'Incorrect authentication information.',
+      msg: 'Please provide a username and password.',
     };
   }
   const server = servers.find(el => el.ip === ip);
@@ -226,7 +233,7 @@ app.post('/api/restart/:ip', (req, res) => {
     };
   }
   const server = servers.find(el => el.ip === ip);
-  return server.restart(status => res.send(status));
+  return server.restart(req.body.username, req.body.password, status => res.send(status));
 });
 
 

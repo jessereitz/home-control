@@ -1,8 +1,8 @@
 #! /usr/bin/env node
 
-/***********************
+/* *********************
  *     Create User     *
- **********************/
+ ******************** */
 
 /**
 * This script creates a new Home Control user.
@@ -25,9 +25,9 @@ const dbPath = path.join(__dirname, '..', 'hc-info.db');
 
 function addUser(userInfo) {
   const db = new sqlite3.Database(dbPath);
-  const stmt = db.prepare("INSERT INTO users (NAME, USERNAME, PASSWORD) VALUES (?, ?, ?);");
+  const stmt = db.prepare('INSERT INTO users (NAME, USERNAME, PASSWORD) VALUES (?, ?, ?);');
 
-  const name = userInfo.name;
+  const { name } = userInfo;
   const un = String(userInfo.username).toLowerCase();
   bcrypt.hash(userInfo.password, 12)
     .then((hashed) => {
@@ -36,31 +36,28 @@ function addUser(userInfo) {
           console.error(error('Uh oh... We were unable to create your account. See stack trace below: '));
           console.error(err);
         } else {
-          console.log(success("Hooray! Your account has been created successfully!\n"));
+          console.log(success('Hooray! Your account has been created successfully!\n'));
         }
       });
-    })
+    });
 }
 
-console.log(chalk.bold.bgCyan("\nWelcome to Home Control!\n"));
-console.log("This script will set up a user for you. \nPlease follow the prompts to set up your account.\n");
-
-let questions = [
+const questions = [
   {
     type: 'text',
     name: 'name',
-    message: 'What is your full name?'
+    message: 'What is your full name?',
   },
   {
     type: 'text',
     name: 'username',
-    message: 'What would you like your username to be?'
+    message: 'What would you like your username to be?',
   },
   {
     type: 'password',
     name: 'password',
-    message: 'What do you want for a password?'
-  }
+    message: 'What do you want for a password?',
+  },
 ];
 
 prompts(questions)
