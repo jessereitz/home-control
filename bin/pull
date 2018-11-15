@@ -1,0 +1,3 @@
+git pull
+cd hc-back && npm install
+cd ../hc-front && npm install
