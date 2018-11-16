@@ -2,6 +2,7 @@ const fs = require('fs');
 const express = require('express');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
+const chalk = require('chalk');
 
 // Server abstraction
 const Server = require('./src/Server.js');
@@ -35,7 +36,13 @@ app.use((req, res, next) => {
 });
 
 // Load configuration information of servers.
-const serverData = JSON.parse(fs.readFileSync('./server-config.json', 'utf-8'));
+let serverData = null;
+try {
+  serverData = JSON.parse(fs.readFileSync('./server-config.json', 'utf-8'));
+} catch (e) {
+  console.error(chalk.bold.red('ERORR:'), "Please run 'npm run initialize' before starting the server.");
+  process.exit(1);
+}
 // Initialize server objects
 const servers = serverData.servers.map((info) => {
   const returnServer = Object.create(Server);

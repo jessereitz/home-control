@@ -1,11 +1,20 @@
 const path = require('path');
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
+const chalk = require('chalk');
 
 const dbPath = path.join(__dirname, '..', 'hc-info.db');
 
 const findUserByID = 'SELECT * FROM users WHERE ID=$val;';
 const findUserByUsername = 'SELECT * FROM users WHERE USERNAME=$val;';
+
+const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
+  if (err) {
+    console.error(chalk.bold.red('ERORR:'), "Please run 'npm run initialize' before starting the server.");
+    process.exit(1);
+  }
+  db.close();
+});
 
 /**
  * findUser - Finds a user in the database either by ID or by username.
@@ -17,10 +26,7 @@ const findUserByUsername = 'SELECT * FROM users WHERE USERNAME=$val;';
  *  from the database. When rejected, returns error message.
  */
 function findUser(nameOrId) {
-  const db = new sqlite3.Database(
-    path.join(__dirname, '..', 'hc-info.db'),
-    sqlite3.OPEN_READONLY,
-  );
+  const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY);
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       let queryString;
