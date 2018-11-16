@@ -1,0 +1,7 @@
+#! /usr/bin/env bash
+
+####################################
+#     Build Production Version     #
+####################################
+TARGET_DIR='../dist'
+cp ./idex.js

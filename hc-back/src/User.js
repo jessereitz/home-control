@@ -3,14 +3,15 @@ const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const chalk = require('chalk');
 
-const dbPath = path.join(__dirname, '..', 'hc-info.db');
+console.log('prod: ', process.env.PROD);
+const dbPath = process.env.PROD ? path.join(__dirname, 'hc-info.db') : path.join(__dirname, '..', 'hc-info.db');
 
 const findUserByID = 'SELECT * FROM users WHERE ID=$val;';
 const findUserByUsername = 'SELECT * FROM users WHERE USERNAME=$val;';
 
 const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
   if (err) {
-    console.error(chalk.bold.red('ERORR:'), "Please run 'npm run initialize' before starting the server.");
+    console.error(chalk.bold.red('ERORR: No user database.'), "Please run 'npm run initialize' before starting the server.");
     process.exit(1);
   }
   db.close();

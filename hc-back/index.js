@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const express = require('express');
 const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
@@ -40,7 +41,7 @@ let serverData = null;
 try {
   serverData = JSON.parse(fs.readFileSync('./server-config.json', 'utf-8'));
 } catch (e) {
-  console.error(chalk.bold.red('ERORR:'), "Please run 'npm run initialize' before starting the server.");
+  console.error(chalk.bold.red('ERORR: No server data.'), "Please run 'npm run initialize' before starting the server.");
   process.exit(1);
 }
 // Initialize server objects
@@ -49,6 +50,8 @@ const servers = serverData.servers.map((info) => {
   returnServer.init(info);
   return returnServer;
 });
+
+app.use(express.static(path.join(__dirname, 'static')));
 
 
 /**
