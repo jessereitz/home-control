@@ -19,7 +19,7 @@ console.log('\nCreating Home Control database...');
 db.run(`CREATE TABLE IF NOT EXISTS users(
   ID INTEGER PRIMARY KEY AUTOINCREMENT,
   NAME TEXT NOT NULL,
-  USERNAME TEXT NOT NULL,
+  USERNAME TEXT NOT NULL UNIQUE,
   PASSWORD TEXT NOT NULL
 )`, (err) => {
   if (!err) console.log('Database successfully created!');
