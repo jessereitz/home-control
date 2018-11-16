@@ -2,6 +2,8 @@ const path = require('path');
 const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 
+const dbPath = path.join(__dirname, '..', 'hc-info.db');
+
 const findUserByID = 'SELECT * FROM users WHERE ID=$val;';
 const findUserByUsername = 'SELECT * FROM users WHERE USERNAME=$val;';
 
@@ -14,7 +16,11 @@ const findUserByUsername = 'SELECT * FROM users WHERE USERNAME=$val;';
  * @returns {Promise} Returns a promise. When resolved, returns the user info
  *  from the database. When rejected, returns error message.
  */
-function findUser(nameOrId, db) {
+function findUser(nameOrId) {
+  const db = new sqlite3.Database(
+    path.join(__dirname, '..', 'hc-info.db'),
+    sqlite3.OPEN_READONLY,
+  );
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       let queryString;
@@ -32,6 +38,8 @@ function findUser(nameOrId, db) {
           resolve(row);
         }
       });
+      stmt.finalize();
+      db.close();
     });
   });
 }
@@ -52,11 +60,7 @@ const User = {
    */
   init(usernameOrId, callback) {
     this.info = {};
-    this.db = new sqlite3.Database(
-      path.join(__dirname, '..', 'hc-info.db'),
-      sqlite3.OPEN_READONLY,
-    );
-    findUser(usernameOrId, this.db)
+    findUser(usernameOrId)
       .then((userInfo) => {
         this.info.id = userInfo.ID;
         this.info.name = userInfo.NAME;

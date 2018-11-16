@@ -27,4 +27,5 @@ db.run(`CREATE TABLE IF NOT EXISTS users(
     console.log('Something went wrong. Database has NOT been created...');
     console.log(err);
   }
+  db.close();
 });

@@ -69,31 +69,40 @@ const serverQuestions = [
     type: 'text',
     name: 'ip',
     message: 'What is your server\'s IP address?',
-    validate: val => (isIP(val) ? true : 'Invalid format.'),
+    validate: val => (isIP(val) ? true : 'Invalid format. Use format XXX.XXX.XXX.XXX'),
   },
   {
     type: 'text',
     name: 'mac',
     message: 'What is your server\'s MAC address?',
-    validate: val => (isMAC(val) ? true : 'Invalid format.'),
+    validate: val => (isMAC(val) ? true : 'Invalid format. Use format XX:XX:XX:XX:XX:XX'),
   },
 ];
 
 async function askServerQuestions(serverList) {
-  if (!serverList) serverList = [];
+  let innerServerList = [];
+  if (serverList) innerServerList = serverList;
   const serverInfo = await prompts(
     serverQuestions,
     { onCancel: () => false },
   );
   if (Object.keys(serverInfo).length !== serverQuestions.length) return null;
-  serverList.push(serverInfo);
+  innerServerList.push(serverInfo);
   console.log('Alright, that server\'s all set.');
   const addAnother = await prompts(yesNoQuestion(
     '\nWould you like to add another server?',
     { onCancel: () => false },
   ));
-  if (isNo(addAnother.yesNo)) return serverList;
-  return askServerQuestions(serverList);
+  if (isNo(addAnother.yesNo)) return innerServerList;
+  return askServerQuestions(innerServerList);
+}
+
+function cancelCreation() {
+  console.log(
+    '\nAlright. We won\'t add a server right now.',
+    'If you would like to add a server in the future, just run create-config.js again or edit the server-config.json file.\n',
+  );
+  return 1;
 }
 
 async function createConfigResponse() {
@@ -104,16 +113,11 @@ async function createConfigResponse() {
     'Answer these prompts to add your server.',
   );
   const shouldAddServer = await prompts(yesNoQuestion('Would you like to create your configuration file now (Y/n)?'));
-  if (!isYes(shouldAddServer.yesNo)) {
-    console.log(
-      '\nAlright. We won\'t add a server right now.',
-      'If you would like to add a server in the future, just run create-config.js again or edit the server-config.json file.\n',
-    );
-    return null;
-  }
+  if (!isYes(shouldAddServer.yesNo)) return cancelCreation();
 
   console.log('Perfect. We\'ll ask you a few questions about your server now.');
   const serverInfo = await askServerQuestions();
+  if (!serverInfo) return cancelCreation();
   console.log('\nCreating config file...');
   const fileContents = {
     _meta: {
@@ -123,11 +127,10 @@ async function createConfigResponse() {
     servers: serverInfo,
   };
   fs.writeFile(configFilePath, JSON.stringify(fileContents, null, 2), (err) => {
-    if (err) console.error(error(err));
+    if (err) console.error('error', error(err));
     console.log(success('Config file created successfully!'));
     console.log(`You can edit the config file at any time at ${configFilePath}`);
   });
-  console.log(serverInfo);
   return 0;
 }
 

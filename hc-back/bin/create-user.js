@@ -23,38 +23,40 @@ const success = chalk.bold.green;
 const info = chalk.bgCyan;
 
 const dbPath = path.join(__dirname, '..', 'hc-info.db');
+const db = new sqlite3.Database(dbPath);
 
-function addUser(userInfo) {
-  const db = new sqlite3.Database(dbPath);
-  const stmt = db.prepare('INSERT INTO users (NAME, USERNAME, PASSWORD) VALUES (?, ?, ?);');
+async function addUser(userInfo) {
+  db.serialize(() => {
+    const stmt = db.prepare('INSERT INTO users (NAME, USERNAME, PASSWORD) VALUES (?, ?, ?);');
 
-  const { name } = userInfo;
-  const un = String(userInfo.username).toLowerCase();
-  bcrypt.hash(userInfo.password, 12)
-    .then((hashed) => {
-      stmt.run(name, un, hashed, (err) => {
-        if (err) {
-          console.error(error('Uh oh... We were unable to create your account. See stack trace below: '));
-          console.error(err);
-        } else {
-          console.log(success('Hooray! Your account has been created successfully!\n'));
-        }
+    const { name } = userInfo;
+    const un = String(userInfo.username).toLowerCase();
+    bcrypt.hash(userInfo.password, 12)
+      .then((hashed) => {
+        stmt.run(name, un, hashed, (err) => {
+          if (err) {
+            console.error(error('Uh oh... We were unable to create your account. See stack trace below: '));
+            console.error(err);
+          } else {
+            console.log(success('Hooray! Your account has been created successfully!\n'));
+          }
+        });
       });
-    });
+  });
 }
 
 function loadUsernames(callback) {
-  const db = new sqlite3.Database(dbPath);
   db.serialize(() => {
     const stmt = db.prepare('SELECT USERNAME FROM users;');
     stmt.all([], (err, rows) => {
       if (err) {
         console.error(err);
-        callback(err);
+        return callback(err);
       }
       const usernames = rows.map(row => row.USERNAME);
-      callback(null, usernames);
+      return callback(null, usernames);
     });
+    stmt.finalize();
   });
 }
 
@@ -63,7 +65,7 @@ function onCancel() {
   console.log('Please re-run create-user.js to add an account.');
 }
 
-function main() {
+async function main() {
   loadUsernames(async (err, usernames) => {
     if (err) {
       console.error('There was a problem with the database. Please run create-db.js to create the database.');
@@ -96,7 +98,7 @@ function main() {
 
     console.log('\nPerfect. Give us a moment while we get that user set up for you!');
 
-    addUser(response);
+    await addUser(response);
   });
 }
 
