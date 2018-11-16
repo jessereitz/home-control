@@ -20,6 +20,7 @@ const prompts = require('prompts');
 
 const error = chalk.bold.red;
 const success = chalk.bold.green;
+const info = chalk.bgCyan;
 
 const dbPath = path.join(__dirname, '..', 'hc-info.db');
 
@@ -42,26 +43,61 @@ function addUser(userInfo) {
     });
 }
 
-const questions = [
-  {
-    type: 'text',
-    name: 'name',
-    message: 'What is your full name?',
-  },
-  {
-    type: 'text',
-    name: 'username',
-    message: 'What would you like your username to be?',
-  },
-  {
-    type: 'password',
-    name: 'password',
-    message: 'What do you want for a password?',
-  },
-];
+function loadUsernames(callback) {
+  const db = new sqlite3.Database(dbPath);
+  db.serialize(() => {
+    const stmt = db.prepare('SELECT USERNAME FROM users;');
+    stmt.all([], (err, rows) => {
+      if (err) {
+        console.error(err);
+        callback(err);
+      }
+      const usernames = rows.map(row => row.USERNAME);
+      callback(null, usernames);
+    });
+  });
+}
 
-prompts(questions)
-  .then((response) => {
+function onCancel() {
+  console.log('\n\nCancelling...');
+  console.log('Please re-run create-user.js to add an account.');
+}
+
+function main() {
+  loadUsernames(async (err, usernames) => {
+    if (err) {
+      console.error('There was a problem with the database. Please run create-db.js to create the database.');
+    }
+
+    const questions = [
+      {
+        type: 'text',
+        name: 'name',
+        message: 'What is your full name?',
+      },
+      {
+        type: 'text',
+        name: 'username',
+        message: 'What would you like your username to be?',
+        validate: val => (!usernames.includes(val) ? true : 'Username unavailable.'),
+      },
+      {
+        type: 'password',
+        name: 'password',
+        message: 'What do you want for a password?',
+      },
+    ];
+
+    console.log(info('\n\nHome Control User Setup\n\n'));
+    console.log('You need a local user account to get started. Please answer the prompts below.');
+
+    const response = await prompts(questions, { onCancel });
+    if (Object.keys(response).length !== questions.length) process.exit(1);
+
     console.log('\nPerfect. Give us a moment while we get that user set up for you!');
+
     addUser(response);
   });
+}
+
+main();
