@@ -58,7 +58,7 @@ app.use(express.static(path.join(__dirname, 'static')));
  * Home page - (Will) render the React app.
  *
  */
-app.get('/', (req, res) => res.send('hello!'));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'static/build/index.html')));
 
 /** **********************
  *                       *
