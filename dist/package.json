@@ -2,7 +2,7 @@
   "name": "hc-back",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "create-db": "./bin/create-db.js",
     "create-user": "./bin/create-user.js",
