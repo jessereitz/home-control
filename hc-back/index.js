@@ -74,9 +74,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'static/build/index
  */
 app.get('/api/user', (req, res) => {
   const returnObj = {};
-  console.log('user');
-  console.log(req.session.user);
-  if (!req.session.user) {
+    if (!req.session.user) {
     returnObj.status = 'error';
     returnObj.msg = 'No user.';
     res.send(returnObj);
