@@ -1,0 +1,11 @@
+[Unit]
+Description=Home Control - Control your servers from the web.
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /home/jessereitz/home-control/dist/server.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

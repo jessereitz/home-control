@@ -1,15 +1,15 @@
 {
-  "name": "hc-back",
+  "name": "home-control",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./server.js",
   "scripts": {
     "create-db": "./bin/create-db.js",
     "create-user": "./bin/create-user.js",
     "create-config": "./bin/create-config.js",
     "initialize": "./bin/welcome.js && npm run create-db && npm run create-user && npm run create-config",
     "bundle": "node_modules/.bin/webpack",
-    "build-prod": "npm run bundle && cp -R ./bin ../dist/bin && cp ./package.json ../dist",
+    "build-prod": "npm run bundle && cp -R ./bin ../dist/bin && ./clean-package.js",
     "run-prod": "sudo NODE_ENV=prod node server.js"
   },
   "author": "",
@@ -27,12 +27,6 @@
     "sqlite3": "^4.0.4",
     "wake_on_lan": "^1.0.0"
   },
-  "devDependencies": {
-    "eslint": "^5.9.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.14.0",
-    "webpack": "^4.25.1",
-    "webpack-cli": "^3.1.2",
-    "webpack-node-externals": "^1.7.2"
-  }
+  "devDependencies": null,
+  "bin": "./server.js"
 }

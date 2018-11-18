@@ -3,7 +3,7 @@ const sqlite3 = require('sqlite3');
 const bcrypt = require('bcrypt');
 const chalk = require('chalk');
 
-const dbPath = String(process.env.NODE_ENV).toLowerCase() === 'dev' ? path.join(__dirname, '..', 'hc-info.db') : './hc-info.db' ;
+const dbPath = String(process.env.NODE_ENV).toLowerCase() === 'dev' ? path.join(__dirname, '..', 'hc-info.db') : path.join(__dirname, 'hc-info.db');
 const findUserByID = 'SELECT * FROM users WHERE ID=$val;';
 const findUserByUsername = 'SELECT * FROM users WHERE USERNAME=$val;';
 

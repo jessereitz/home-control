@@ -39,9 +39,11 @@ app.use((req, res, next) => {
 // Load configuration information of servers.
 let serverData = null;
 try {
-  serverData = JSON.parse(fs.readFileSync('./server-config.json', 'utf-8'));
+  console.log(path.join(__dirname, 'server-config.json'));
+  serverData = JSON.parse(fs.readFileSync(path.join(__dirname, 'server-config.json'), 'utf-8'));
 } catch (e) {
   console.error(chalk.bold.red('ERORR: No server data.'), "Please run 'npm run initialize' before starting the server.");
+  console.log(e);
   process.exit(1);
 }
 // Initialize server objects
