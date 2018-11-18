@@ -1,5 +1,3 @@
-#! /usr/bin/env node
-
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
@@ -12,7 +10,7 @@ const Server = require('./src/Server.js');
 const User = require('./src/User.js');
 
 // Set port, initialize express
-const port = 8000;
+const port = 9070;
 const app = express();
 
 // Set up body parser

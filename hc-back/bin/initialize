@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+./bin/welcome.js && ./bin/create-db.js && ./bin/create-user.js && ./bin/create-config.js

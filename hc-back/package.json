@@ -1,7 +1,7 @@
 {
   "name": "hc-back",
   "version": "1.0.0",
-  "description": "",
+  "description": "Turn your servers on/off from the web.",
   "main": "index.js",
   "scripts": {
     "create-db": "./bin/create-db.js",
@@ -9,11 +9,11 @@
     "create-config": "./bin/create-config.js",
     "initialize": "./bin/welcome.js && npm run create-db && npm run create-user && npm run create-config",
     "bundle": "node_modules/.bin/webpack",
-    "build-prod": "npm run bundle && cp -R ./bin ../dist/bin && cp ./package.json ../dist",
+    "build-prod": "npm run bundle && cp -R ./bin ../dist && ./clean-package-json.js",
     "run-prod": "sudo NODE_ENV=prod node server.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Jesse Reitz",
+  "license": "GNU",
   "dependencies": {
     "axios": "^0.18.0",
     "bcrypt": "^3.0.2",
