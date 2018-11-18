@@ -45,16 +45,16 @@ async function addUser(userInfo) {
   });
 }
 
-function loadUsernames(callback) {
+async function loadUsernames() {
   db.serialize(() => {
     const stmt = db.prepare('SELECT USERNAME FROM users;');
     stmt.all([], (err, rows) => {
       if (err) {
         console.error(err);
-        return callback(err);
+        return err; 
       }
       const usernames = rows.map(row => row.USERNAME);
-      return callback(null, usernames);
+      return usernames; 
     });
     stmt.finalize();
   });
@@ -65,41 +65,43 @@ function onCancel() {
   console.log('Please re-run create-user.js to add an account.');
 }
 
-async function main() {
-  loadUsernames(async (err, usernames) => {
-    if (err) {
-      console.error('There was a problem with the database. Please run create-db.js to create the database.');
-    }
+async function createUser() {
+  console.log('create user!');
+  const usernames = await loadUsernames();
+  console.log(usernames);
+  if (usernames && !Array.isArray(usernames)) {
+    console.error(error('Database error.'));
+    process.exit(1); 
+  } 
 
-    const questions = [
-      {
-        type: 'text',
-        name: 'name',
-        message: 'What is your full name?',
-      },
-      {
-        type: 'text',
-        name: 'username',
-        message: 'What would you like your username to be?',
-        validate: val => (!usernames.includes(val) ? true : 'Username unavailable.'),
-      },
-      {
-        type: 'password',
-        name: 'password',
-        message: 'What do you want for a password?',
-      },
-    ];
+  const questions = [
+    {
+      type: 'text',
+      name: 'name',
+      message: 'What is your full name?',
+    },
+    {
+      type: 'text',
+      name: 'username',
+      message: 'What would you like your username to be?',
+      validate: val => (!usernames || !usernames.includes(val) ? true : 'Username unavailable.'),
+    },
+    {
+      type: 'password',
+      name: 'password',
+      message: 'What do you want for a password?',
+    },
+  ];
 
-    console.log(info('\n\nHome Control User Setup\n\n'));
-    console.log('You need a local user account to get started. Please answer the prompts below.');
+  console.log(info('\n\nHome Control User Setup\n\n'));
+  console.log('You need a local user account to get started. Please answer the prompts below.');
 
-    const response = await prompts(questions, { onCancel });
-    if (Object.keys(response).length !== questions.length) process.exit(1);
+  const response = await prompts(questions, { onCancel });
+  if (Object.keys(response).length !== questions.length) process.exit(1);
 
-    console.log('\nPerfect. Give us a moment while we get that user set up for you!');
+  console.log('\nPerfect. Give us a moment while we get that user set up for you!');
 
-    await addUser(response);
-  });
+  await addUser(response);
 }
 
-main();
+createUser();
