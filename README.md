@@ -31,3 +31,11 @@ Provide a JSON config file:
 * View MAC and IP addresses
 * Power on machine
 * Restart machine
+
+
+## Installation
+
+```shell
+$ sudo snap install home-control
+$ sudo snap connect home-control:network-observe
+```
