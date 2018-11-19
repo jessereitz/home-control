@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+
+echo "Installing Home Control"
+cd ./dist &&
+npm install &&
+sudo npm run initialize &&
+cd .. &&
+sudo cp -r ./dist /usr/local/bin/home-control &&
+sudo systemctl restart home-control
