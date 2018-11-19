@@ -38,7 +38,7 @@ placing the directory in `/usr/local/bin` as this is what the included service
 unit file will expect. You can change this if you wish, just be sure to edit the
 `home-control.service` file to match what your preferred location.
 ```shell
-    $ sudo git clone https://github.com/jessereitz/home-control.git /usr/local/bin
+    $ sudo git clone https://github.com/jessereitz/home-control.git /usr/local/bin/home-control
 ```
 
 2. Install dependencies via npm from the home-control directory.
