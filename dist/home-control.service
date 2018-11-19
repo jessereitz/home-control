@@ -4,8 +4,11 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/node /home/jessereitz/home-control/dist/server.js
+ExecStart=/usr/bin/node /usr/local/bin/home-control/dist/server.js # Home Control doesn't HAVE to be located here but it's a pretty good spot to keep it.
 Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=Home-Control
 
 [Install]
 WantedBy=multi-user.target

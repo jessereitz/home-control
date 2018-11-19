@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+echo "Creating Home Control service..."
+cp ./home-control.service /etc/systemd/system/
+systemctl enable home-control
+systemctl start home-control
+echo "Success. Home Control should have been added as a service to your machine."
+echo "Check its status with $ systemctl status home-control"

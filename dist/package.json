@@ -7,7 +7,7 @@
     "create-db": "./bin/create-db.js",
     "create-user": "./bin/create-user.js",
     "create-config": "./bin/create-config.js",
-    "initialize": "./bin/welcome.js && npm run create-db && npm run create-user && npm run create-config",
+    "initialize": "./bin/welcome.js && npm run create-db && npm run create-user && npm run create-config && ./bin/create-service",
     "bundle": "node_modules/.bin/webpack",
     "build-prod": "npm run bundle && cp -R ./bin ../dist/bin && ./clean-package.js",
     "run-prod": "sudo NODE_ENV=prod node server.js"
