@@ -32,36 +32,34 @@ have it. If you're on a Debian/Ubuntu system, simply run
 
 Once you have that taken care of, follow these steps:
 
-1. Download the Home Control Monitor source files via a git clone or grab the
-latest release here on the repo. For the easiest installation, I recommend
-placing the directory in `/usr/local/bin` as this is what the included service
-unit file will expect. You can change this if you wish, just be sure to edit the
-`home-control.service` file to match what your preferred location.
+1. Download the Home Control Monitor source files via git clone.
+You can place the directory anywhere you wish, the installation process will
+place the necessary files in the correct location (by default, the requisite
+directory will be placed in `/usr/local/bin/home-control`). For ease though, you'll
+probably want to put it somewhere in your home folder. For example:
 ```shell
-    $ sudo git clone https://github.com/jessereitz/home-control.git /usr/local/bin/home-control
+    $ sudo git clone https://github.com/jessereitz/home-control.git ~/
 ```
 
-2. Install dependencies via npm from the home-control directory.
+2. From here, `cd` into the directory and run the install script at `home-control/bin/install`
+like so:
 ```shell
-    $ npm install
+    $ cd ~/home-control && ./bin/install
 ```
+This will install all the requisite dependencies (except sqlite3, see above),
+walk you through creating a user database, a user account (see below), and
+a configuration file to keep track of which servers to monitor. It will then
+copy the service unit file to `/etc/systemd/system`, copy the `home-control/dist`
+directory to `/usr/local/bin/home-control` and enable/start the home-control
+service.
 
-3. Run the initialization script from the home-control directory. This
-will walk you through creating a user database and a user account (see below),
-creating a configuration file to keep track of which servers to monitor,
-and will copy the service unit file to `/etc/systemd/system` and enable/start
-the service. (This must be done as sudo in order to copy the `.service` file
-into `etc/systemd/system` and enable/start the service)
-```shell
-    $ sudo npm run initialize
-```
-
-4. You should be all set to go! You can browse to `http://localhost:9070` to see
+3. You should be all set to go! You can browse to `http://localhost:9070` to see
 Home Control in action.
 
 Once the initialization process has been completed there will be a
-`server-config.json` file in the home-control directory. It will look something
-like this:
+`server-config.json` file in the home-control directory
+(`/usr/local/bin/home-control`, if you ran the `install` script).
+It will look something like this:
 
 ```JSON
 {
@@ -94,3 +92,9 @@ add-server script from the directory:
 ```shell
 $ npm run add-server
 ```
+
+## A Note on Security
+
+Home Control should **not** be exposed to the internet unless you are serving it
+over HTTPS. Otherwise, your passwords will be sent unencrypted and could be stolen
+and used to gain access to your network.
