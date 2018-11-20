@@ -10,7 +10,7 @@ const Server = require('./src/Server.js');
 const User = require('./src/User.js');
 
 // Set port, initialize express
-const port = 9070;
+let port = 9070;
 const app = express();
 
 // Set up body parser
@@ -46,6 +46,15 @@ try {
   console.log(e);
   process.exit(1);
 }
+
+if (serverData && serverData.hasOwnProperty('port')) {
+  try {
+    port = Number(serverData.port);
+  } catch (e) {
+    console.error(chalk.bold.red('ERROR: Bad port number.'), 'Reverting to default port number');
+  }
+}
+
 // Initialize server objects
 const servers = serverData.servers.map((info) => {
   const returnServer = Object.create(Server);

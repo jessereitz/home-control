@@ -1,12 +1,15 @@
 #! /usr/bin/env node
 
 /* *********************
- *     Create Config     *
+ *     Create User     *
  ******************** */
 
 /**
-* This script creates a new Home Control config file.
+* This script creates a new Home Control user.
 *
+* Note: This only creates a user in the main database, not on the client
+*   machines. This user will be able to view the status of the servers but
+*   will NOT be able to restart or shut them down.
 */
 const fs = require('fs');
 const path = require('path');
@@ -132,3 +135,4 @@ async function createConfigResponse() {
 }
 
 createConfigResponse();
+
